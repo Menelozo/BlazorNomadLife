@@ -1,0 +1,32 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+	<ItemGroup>
+		<None Remove="Shared\HotelsGrid.razor.css" />
+		<None Remove="Shared\PopularHotels.razor.css" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<Content Include="Shared\HotelsGrid.razor.css" />
+		<Content Include="Shared\PopularHotels.razor.css" />
+	</ItemGroup>
+
+
+  <ItemGroup>
+    <SupportedPlatform Include="browser" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="8.0.4" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\NomadLife.Shared\NomadLife.Shared.csproj" />
+  </ItemGroup>
+
+</Project>

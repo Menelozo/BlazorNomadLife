@@ -1,0 +1,40 @@
+﻿@page "/locations"
+
+@inject IHotelService HotelService
+@inject ICommonService CommonService
+
+<PageTitle>All Locations | Nomad Lifes</PageTitle>
+
+<SectionContent SectionName="PageTitle">
+    @if(CommonService.IsWeb)
+    {
+        <h1 class="m-0 text-white fw-bold">All Locations</h1>
+
+    }
+    else
+    {
+        <span>All Locations</span>
+    }
+</SectionContent>
+
+<div class="container mt-3">
+    <div class="row">
+        @foreach (var g in _locations)
+        {
+            <div class="col-6 col-sm-3 mb-4">
+                <a href="/?location=@g.Slug" title="@g.Name Hotels" class="bg-white p-3 d-flex justify-content-center align-items-center   heading">@g.Name</a>
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    private LocationDto[] _locations = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        CommonService.ShowLoader("Fetching locations...");
+        _locations = await HotelService.GetLocationsAsync(topOnly: false);
+        CommonService.HideLoader();
+    }
+}

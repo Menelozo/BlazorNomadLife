@@ -1,0 +1,41 @@
+﻿.right-box {
+    margin-top: 20px;
+    box-shadow: 0 0 5px lightgray;
+    border-radius: 8px;
+}
+
+.popular-hotel-item {
+    background-color: white;
+    padding: 15px;
+    margin-bottom: 5px;
+    display: grid;
+    grid-template-columns: 100px auto;
+    grid-column-gap: 10px;
+}
+
+    .popular-hotel-item:first-child {
+        border-top: 1px solid var(--color-very-light-gray);
+    }
+
+    .popular-hotel-item:last-child {
+        margin-bottom: 0;
+    }
+
+    .popular-hotel-item img {
+        width: 100px;
+        height: 120px;
+    }
+
+.hotel-title {
+    color: black;
+    opacity: 0.8;
+    font-weight: bold;
+    font-size: 20px;
+    line-height: 25px;
+    margin-bottom: 10px;
+}
+
+.hotel-author {
+    color: darkgrey;
+    font-size: 17px;
+}

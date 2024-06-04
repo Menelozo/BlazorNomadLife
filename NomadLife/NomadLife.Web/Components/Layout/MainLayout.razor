@@ -1,0 +1,37 @@
+﻿ @inherits LayoutComponentBase
+
+@* <div class="page">
+    <div class="sidebar">
+        <NavMenu />
+    </div>
+
+    <main>
+        <div class="top-row px-4">
+            <a href="https://learn.microsoft.com/aspnet/core/" target="_blank">About</a>
+        </div>
+
+        <article class="content px-4">
+            @Body
+        </article>
+    </main>
+</div> *@
+
+<NavMenu/>
+
+<div class="container-fluid bg-main">
+    <div class="container d-flex flex-column justify-content-center align-items-center p-5">
+        <SectionOutlet SectionName="PageTitle"/>
+    </div>
+</div>
+
+@Body 
+
+<hr />
+
+<div class="container">
+    <footer class="d-flex align-items-center justify-content-center">
+        <p>
+            &copy; @DateTime.Today.Year - Nomad Life | Developed by <a href="https://www.youtube.com/@@PawelSyrowyGames/featured" target="_blank">Paweł Syrowy</a>
+        </p>
+    </footer>
+</div>

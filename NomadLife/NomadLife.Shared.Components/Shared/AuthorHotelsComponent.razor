@@ -1,0 +1,150 @@
+﻿
+@inject NavigationManager NavigationManager
+@inject IHotelService HotelService
+@inject ICommonService CommonService
+
+
+<PageTitle>@_heading | Nomad Lifes</PageTitle>
+
+<SectionContent SectionName="PageTitle">
+    @if (CommonService.IsWeb)
+    {
+        <h1 class="m-0 text-white fw-bold">@_heading</h1>
+
+    }
+    else
+    {
+        <span>@_heading</span>
+    }
+</SectionContent>
+
+<div class="container-lg">
+    <div class="row">
+        <div class="col-md-9">
+            <div class="row">
+                <h3 class="mt-2 mb-3 heading">@_heading</h3>
+                <HotelsGrid Hotels="_authorHotels"/>
+                <div class="paging w-100">
+                    @if (CommonService.IsWeb)
+                    {
+                        <div class="d-flex justify-content-end align-items-center">
+                            <Pagination PrevPageUrl="@_prevPageUrl" NextPageUrl="@_nextPageUrl" />
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="d-flex justify-content-between align-items-center">
+                            <Pagination PrevPageUrl="@_prevPageUrl" NextPageUrl="@_nextPageUrl" />
+                        </div>
+                    }
+                </div>
+
+            </div>
+        </div>
+        <div class="col-md-3">
+            <PopularHotels PopularHotelsList="_popularHotels"/>
+        </div>
+    </div>
+</div>
+
+
+
+@code{
+    private const int PageSize = 16;
+
+    [Parameter, EditorRequired]
+    public string AuthorSlug {get;set;}
+
+    [Parameter]
+    public int? PageNo { get; set; }
+
+    private HotelListDto[] _authorHotels = [];
+    private HotelListDto[] _popularHotels=[];
+    private int _totalCount = 0;
+
+    private string? _prevPageUrl;
+    private string? _nextPageUrl;
+
+    private string _heading = "Author Hotels";
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (PageNo <= 0 || string.IsNullOrWhiteSpace(AuthorSlug) || PageNo<2)
+        {
+            NavigationManager.NavigateTo("/");
+            return;
+        }
+
+        CommonService.ShowLoader("Fetching author hotels...");
+
+        (_authorHotels, _totalCount) = await HotelService.GetHotelsByAuthorAsync(PageNo ?? 1, PageSize, AuthorSlug);
+        _popularHotels = await HotelService.GetPopularHotelsAsync(10);
+
+        SetPagingUrl();
+
+
+        var author = _authorHotels.First()?.Author;
+        if (author is not null)
+        {
+            _heading = $"Hotels by {author.Value.Name}";
+        }
+        if (PageNo > 1)
+        {
+            _heading += $" | Page {PageNo}";
+        }
+
+        CommonService.HideLoader();
+    }
+    private void SetPagingUrl()
+    {
+        var currentPageHotelCount = _authorHotels.Length;
+
+        var parts = NavigationManager.Uri.Split('?');
+        var queryString = "";
+        if (parts.Length > 1)
+        {
+            queryString = $"?{parts[1]}";
+        }
+
+
+        if (PageNo is null || PageNo == 1)
+        {
+            _prevPageUrl = null;
+            if (currentPageHotelCount < PageSize)
+            {
+                //There is only page, there are no more records so we wiill not have next page
+                _nextPageUrl = null;
+            }
+            else
+            {
+                _nextPageUrl = $"/page/2{queryString}";
+
+            }
+        }
+        else
+        {
+            if (PageNo > 2)
+            {
+                _prevPageUrl = $"/page/{(PageNo - 1)}{queryString}";
+            }
+            else
+            {
+                _prevPageUrl = $"/{queryString}";
+
+            }
+
+
+            if (currentPageHotelCount < PageSize)
+            {
+                //There is only page, there are no more records so we wiill not have next page
+                _nextPageUrl = null;
+            }
+            else
+            {
+                _nextPageUrl = $"/page/{(PageNo + 1)}{queryString}";
+
+            }
+        }
+    }
+
+}

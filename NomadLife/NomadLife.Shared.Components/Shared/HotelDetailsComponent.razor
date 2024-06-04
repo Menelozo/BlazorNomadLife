@@ -1,0 +1,141 @@
+﻿@inject NavigationManager NavigationManager
+
+@inject IHotelService HotelService
+@inject ICommonService CommonService
+
+<PageTitle>@_hotel?.Title</PageTitle>
+
+<SectionContent SectionName="PageTitle">
+    @if (CommonService.IsWeb)
+    {
+        <h1 class="m-0 text-white fw-bold">
+            @_hotel?.Title 
+            - Hotel Description
+        </h1>
+    }
+    else
+    {
+        <span>@_hotel?.Title</span>
+    }
+</SectionContent>
+
+@if (_hotel is not null)
+{
+    <div class="container mt-5">
+        <div class="row">
+            <div class="col-sm-4 d-flex flex-column align-items-center">
+                <div class="image-wrapper">
+                    <img src="@_hotel.Image" alt="@_hotel.Title" class="img-fluid" />
+                </div>
+                <div class="my-4">
+                    <table class="table table-bordered">
+                        <tbody>
+                            <tr>
+                                <th scope="row">Hotel Id</th>
+                                <td>@_hotel.Id</td>
+
+                            </tr>
+                            <tr>
+                                <th scope="row">Type</th>
+                                <td>@_hotel.Type</td>
+
+                            </tr>
+                            <tr>
+                                <th scope="row">No. of Stars</th>
+                                <td>@_hotel.NumStars</td>
+
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <a href="@_hotel.HotelLink" target="_blank" class="btn btn-hotel fab mb-5">
+                    @(string.IsNullOrWhiteSpace(_hotel.BuyLink) ? "Read More" : "Buy Now")
+                </a>
+            </div>
+            <div class="col-sm-8">
+                <h2 class="fw-bold">@_hotel.Title</h2>
+                <h5 class="mt-3">
+                    <span>by</span>
+                    <a href="/authors/@_hotel.Author.Slug/hotels"
+                       title="Hotels by @_hotel.Author.Name"
+                       class="text-secondary fw-bold">
+                        @_hotel.Author.Name
+                    </a>
+                </h5>
+                <hr />
+                <h3 class="my-3">Description</h3>
+                <p class="">
+                    @_hotel.Description
+                </p>
+                <h4 class="my-3">Locations</h4>
+                <div class="d-flex flex-wrap">
+                    @foreach (var g in _hotel.Locations)
+                    {
+                        <a href="/?location=@g.Slug" class="location-tag" title="@g.Name Hotels">@g.Name</a>
+                    }
+                </div>
+
+                <hr style="height: 5px" class="text-main" />
+                <h4>Similar Hotels</h4>
+
+                <div class="row">
+                    @foreach (var b in _similarHotels)
+                    {
+                        <div class="col-6 col-sm-4 mb-4">
+                            <a href="/hotels/@b.Id" title="@b.Title">
+                                <div class="d-flex flex-column justify-content-center align-item-center bg-white p-2">
+                                        <img src="@b.Image" alt="@b.Title" class="img-fluid similar-hotel-img" />
+                                    <label class="text-truncate mt-2 similar-hotel-title">@b.Title</label>
+                                </div>
+                            </a>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@if (CommonService.IsMobile)
+{
+    <style>
+        .fab{
+            position: fixed;
+            bottom: 0;
+            left:50%;
+            transform: translateX(-50%);
+            margin-bottom: 10px !important;
+        }
+    </style>
+}
+
+@code {
+    [Parameter, EditorRequired]
+    public int HotelId { get; set; }
+
+    private HotelDetailsDto? _hotel;
+    private HotelListDto[] _similarHotels = [];
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (HotelId <= 0)
+        {
+            NavigationManager.NavigateTo("/");
+            return;
+        }
+
+        CommonService.ShowLoader("Fetching hotel details...");
+
+        var similarHotelsTask = HotelService.GetSimilarHotelsAsync(HotelId, 6);
+        _hotel = await HotelService.GetHotelAsync(HotelId);
+        _similarHotels = await similarHotelsTask;
+
+        CommonService.HideLoader();
+
+        if (_hotel is null)
+        {
+            NavigationManager.NavigateTo("/"/* , replace: true */);
+        }
+    }
+}

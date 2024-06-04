@@ -1,0 +1,8 @@
+﻿@page "/hotels/{hotelId:int}"
+
+<NomadLife.Shared.Components.Shared.HotelDetailsComponent HotelId="HotelId" />
+
+@code {
+    [Parameter]
+    public int HotelId { get; set; }
+}

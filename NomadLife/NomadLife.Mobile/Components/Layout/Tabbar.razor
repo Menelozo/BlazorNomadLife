@@ -1,0 +1,73 @@
+﻿@inject NavigationManager NavigationManager
+
+@inject IHotelService HotelService
+
+<div class="tabbar d-flex justify-content-around align-items-center bg-white py-2 fixed-bottom">
+    <a href="/" class="tab-link @ExploreClass">
+        Explore    
+    </a>
+
+
+
+    <a role="button" @onclick="SelectLocationAsync"  class="tab-link">
+        Top Locations    
+    </a>
+
+
+
+    <a href="/locations" class="tab-link @AllLocationsClass">
+        Locations    
+    </a>
+</div>
+
+@code{
+    private LocationDto[] _topLocations = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        NavigationManager.LocationChanged += (_, __) => StateHasChanged();
+        _topLocations = await HotelService.GetLocationsAsync(topOnly: true);
+
+    }
+
+    private string ExploreClass
+    {
+        get
+        {
+            // NavigationManager.Uri -- complete url with path and query string everything
+            // NavigationManager.BaseUri -- just domain (with port)
+            // http://0.0.0.0?location=science-fiction
+            // http://0.0.0.0/?location=science-fiction
+            var path = NavigationManager.Uri.Replace(NavigationManager.BaseUri, "");
+            if (string.IsNullOrWhiteSpace(path) || path=="/" || path.StartsWith("?") || path.StartsWith("/?"))
+            {
+                //we know it is home page
+                //that means, in mobile version, we are on Explore tab
+                return "active";
+            }
+            return "";
+        }
+    }
+
+    private string AllLocationsClass => 
+                                NavigationManager.Uri.Contains("/locations") ? "active" : "";
+
+
+    private async Task SelectLocationAsync()
+    {
+        string[] buttons = ["Top Hotels", .. _topLocations.Select(g => g.Name).ToArray()];
+        var selectedLocation = await App.Current!.MainPage!.DisplayActionSheet("Select Location", "Cancel", null, buttons);
+
+        if (!string.IsNullOrWhiteSpace(selectedLocation) && selectedLocation != "Cancel")
+        {
+            if(selectedLocation == "Top Hotels")
+            {
+                NavigationManager.NavigateTo("/?location=");
+                return;
+            }
+            var locationSlug = _topLocations.First(g => g.Name == selectedLocation).Slug;
+            NavigationManager.NavigateTo($"/?location={locationSlug}");
+
+        }
+    }
+}

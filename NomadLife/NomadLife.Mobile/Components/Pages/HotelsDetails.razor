@@ -1,0 +1,11 @@
+﻿@page "/hotels/{hotelId:int}"
+@using NomadLife.Mobile.Components.Layout
+
+@layout InnerPageLayout
+
+<NomadLife.Shared.Components.Shared.HotelDetailsComponent HotelId="HotelId" />
+
+@code{
+    [Parameter]
+    public int HotelId{get;set;}
+}

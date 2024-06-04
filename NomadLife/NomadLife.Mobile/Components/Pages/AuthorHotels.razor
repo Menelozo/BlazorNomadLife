@@ -1,0 +1,21 @@
+﻿@page "/authors/{authorSlug}/hotels"
+@page "/authors/{authorSlug}/hotels/page/{pageNo:int?}"
+@using NomadLife.Mobile.Components.Layout
+
+@layout InnerPageLayout
+
+
+<NomadLife.Shared.Components.Shared.AuthorHotelsComponent AuthorSlug="@AuthorSlug" PageNo="PageNo" />
+
+
+@code{
+
+
+    [Parameter]
+    public string AuthorSlug {get;set;}
+
+    [Parameter]
+    public int? PageNo { get; set; } = 1;
+
+    
+}

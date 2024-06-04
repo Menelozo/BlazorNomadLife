@@ -1,0 +1,20 @@
+﻿<div class="row">
+    @foreach (var b in Hotels)
+    {
+        <div class="hotel-block col-sm-6 col-lg-3">
+            <a href="/hotels/@b.Id" title="@b.Title">
+                <figure class="image-box bg-main-light">
+                    <img src="@b.Image" alt="@b.Title" />
+                </figure>
+                <div class="p-2">
+                    <h6 class="text-main heading text-center">@b.Title</h6>
+                </div>
+            </a>
+        </div>
+    }
+</div>
+
+@code{
+    [Parameter, EditorRequired]
+    public HotelListDto[] Hotels {get;set;} =[];
+}

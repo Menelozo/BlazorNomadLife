@@ -1,0 +1,15 @@
+﻿.hotel-block {
+    margin-bottom: 20px;
+}
+
+    .hotel-block .image-box {
+        margin: 0px;
+        overflow: hidden;
+        border-radius: 8px;
+    }
+
+        .hotel-block .image-box img {
+            width: 100%;
+            height: 300px;
+            object-fit: cover;
+        }

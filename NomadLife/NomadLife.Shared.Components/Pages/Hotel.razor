@@ -1,0 +1,201 @@
+﻿@page "/"
+@page "/page/{pageNo:int?}"
+
+@inject NavigationManager NavigationManager
+@inject IHotelService HotelService
+@inject ICommonService CommonService
+
+<PageTitle>Home | Nomad Lifes</PageTitle>
+
+<SectionContent SectionName="PageTitle">
+    @if(CommonService.IsWeb)
+    {
+        <h1 class="m-0 text-white fw-bold">Nomad Lifes</h1>
+        <h3 class="text-white mt-2">A library of hundreds of popular hotels</h3>
+    }
+    else
+    {
+        <span>Nomad Lifes</span>
+    }
+
+</SectionContent>
+
+
+<div class="container-lg">
+    <div class="row">
+        <div class="col-md-9">
+            <div class="row">
+                @if (CommonService.IsWeb)
+                {
+                    <div class="col-sm-12">
+                        <div class="location-list">
+                            <div class="location-item @(string.IsNullOrWhiteSpace(LocationSlug)?"active": "")">
+                                <a class="location-link" href="/" title="Top Hotels">Top Hotels</a>
+                            </div>
+                            @foreach (var g in _locations)
+                            {
+                                <div class="location-item @(LocationSlug == g.Slug ? "active" : "")">
+                                    <a class="location-link" href="?location=@g.Slug" title="@g.Name Hotels">@g.Name</a>
+                                </div>
+                            }
+                        </div>
+
+                    </div>
+                }
+
+            
+                <h3 class="mt-2 mb-3 heading">@_heading</h3>
+               
+                <HotelsGrid Hotels="_hotels"/>
+
+                <div class="paging w-100">
+                    @if (CommonService.IsWeb)
+                    {
+                        <div class="d-flex justify-content-end align-items-center">
+                            <Pagination PrevPageUrl="@_prevPageUrl" NextPageUrl="@_nextPageUrl" />
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="d-flex justify-content-between align-items-center">
+                            <Pagination PrevPageUrl="@_prevPageUrl" NextPageUrl="@_nextPageUrl" />
+                        </div>
+                    }
+                </div>
+
+
+            
+            </div>
+        </div>
+        <div class="col-md-3">
+            <PopularHotels PopularHotelsList="_popularHotels"/>
+            
+        </div>
+    </div>
+</div>
+
+@code {
+    private const int PageSize = 16;
+
+    [Parameter]
+    public int? PageNo { get; set; } 
+
+    [SupplyParameterFromQuery(Name ="location")]
+    public string? LocationSlug{ get; set; }
+
+    // localhost:1234/?location=fantasy
+    // localhost:1234/page/2?location=fantasy
+
+    private string? _prevPageUrl;
+    private string? _nextPageUrl;
+
+
+    private LocationDto[] _locations = [];
+    private HotelListDto[] _hotels = [];
+    private HotelListDto[] _popularHotels = [];
+    private int _totalCount = 0;
+
+    private string _heading = "Top Hotels";
+
+    protected override async Task OnParametersSetAsync()
+    {
+
+        if (PageNo<2)
+        {
+            NavigationManager.NavigateTo("/?location=");
+            return;
+        }
+
+
+
+        CommonService.ShowLoader("Fetching...");
+
+        var locationTask = HotelService.GetLocationsAsync(topOnly: false);
+        var hotelsTask = HotelService.GetHotelsAsync(PageNo ?? 1, PageSize, LocationSlug);
+        var popularTask = HotelService.GetPopularHotelsAsync(10, LocationSlug);
+
+        _locations = await locationTask;
+        (_hotels, _totalCount) = await hotelsTask;
+        _popularHotels = await popularTask;
+
+
+        SetPagingUrl();
+
+        if (!string.IsNullOrWhiteSpace(LocationSlug))
+        {
+            var selectedLocation = _locations.FirstOrDefault(g => g.Slug == LocationSlug);
+            if (selectedLocation.Name is not null)
+            {
+                _heading = $"{selectedLocation.Name} Hotels";
+            }
+            else
+            {
+                _heading = "Top Hotels";
+            }
+        }
+        else
+        {
+            _heading = "Top Hotels";
+        }
+
+        if(PageNo >1)
+        {
+            _heading += $" | Page {PageNo}";
+        }
+
+
+
+        CommonService.HideLoader();
+    }
+    private void SetPagingUrl()
+    {
+        var currentPageHotelCount = _hotels.Length;
+
+        var parts = NavigationManager.Uri.Split('?');
+        var queryString = "";
+        if (parts.Length > 1)
+        {
+            queryString = $"?{parts[1]}";
+        }
+
+
+        if (PageNo is null || PageNo == 1)
+        {
+            _prevPageUrl = null;
+            if (currentPageHotelCount < PageSize)
+            {
+                //There is only page, there are no more records so we wiill not have next page
+                _nextPageUrl = null;
+            }
+            else
+            {
+                _nextPageUrl = $"/page/2{queryString}";
+
+            }
+        }
+        else
+        {
+            if (PageNo > 2)
+            {
+                _prevPageUrl = $"/page/{(PageNo - 1)}{queryString}";
+            }
+            else
+            {
+                _prevPageUrl = $"/{queryString}";
+
+            }
+
+
+            if (currentPageHotelCount < PageSize)
+            {
+                //There is only page, there are no more records so we wiill not have next page
+                _nextPageUrl = null;
+            }
+            else
+            {
+            _nextPageUrl = $"/page/{(PageNo + 1)}{queryString}";
+
+            }
+        }
+    }
+}
